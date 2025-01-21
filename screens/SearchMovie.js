@@ -46,7 +46,7 @@ export default function SearchMovie({navigation}) {
                     <View style={styles.movieContainer}>
                     <Poster posterPath={item.poster_path} imageWidth={300} imageHeight={180}></Poster>
                     <Text numberOfLines={1} style={styles.movieTitle}>{item.title}</Text>
-                    <Vote vote_average={item.vote_average/2} vote_count={item.vote_count}></Vote>
+                    <Vote vote_average={item.vote_average} vote_count={item.vote_count}></Vote>
                     <Text style={styles.movieReleaseDate}>{item.release_date}</Text>
                 </View>
                 </TouchableOpacity>

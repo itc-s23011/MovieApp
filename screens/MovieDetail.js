@@ -9,7 +9,7 @@ export default function MovieDetail(props) {
             <Poster posterPath={movie.poster_path} imageWidth={780} imageHeight={480}></Poster>
             <View>
                 <Text style={styles.title}>{movie.title}</Text>
-                <Vote vote_average={movie.vote_average/2} vote_count={movie.vote_count}></Vote>
+                <Vote vote_average={movie.vote_average} vote_count={movie.vote_count}></Vote>
                 <Text style={styles.movieReleaseDate}>{movie.release_date}</Text>
                 <Text style={styles.overview}>{movie.overview}</Text>
             </View>
