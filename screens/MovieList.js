@@ -2,33 +2,15 @@ import { StyleSheet, Text, View, ScrollView, FlatList, Image, TouchableOpacity }
 import { requests } from '../request';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import MovieFlatList from '../components/MovieFlatList';
 
 export default function MovieList({ navigation }) {
-  const [nowPlaying, setNowPlaying] = useState({});
-  const [commingSoon, setCommingSoon] = useState({});
-  const [populars, setPopulars] = useState({});
-  const [topRated, setTopRated] = useState({});
+
   const [picupMovies, setPicupMovies] = useState({});
 
   useEffect(() => {
-    async function getMovies() {
-      try {
-        const nowPlayingMovies = await axios.get(requests.NOW_PLAYING);
-        setNowPlaying(nowPlayingMovies.data.results);
-
-        const commingSoonMovies = await axios.get(requests.COMMING_SOON);
-        setCommingSoon(commingSoonMovies.data.results);
-
-        const popularsMovies = await axios.get(requests.POPULARS);
-        setPopulars(popularsMovies.data.results);
-
-        const topRatedMovies = await axios.get(requests.TOP_RATED);
-        setTopRated(topRatedMovies.data.results);
-      } catch (error) {
-        console.log(error);
-      }
-    }
     async function getPickUpMovie() {
+        
       try {
         const result = await axios.get(requests.NOW_PLAYING);
         const number = Math.floor(Math.random() * (result.data.results.length - 1) + 1);
@@ -37,7 +19,7 @@ export default function MovieList({ navigation }) {
         console.log(error);
       }
     }
-    getMovies();
+
     getPickUpMovie();
   }, []);
   return (
@@ -48,74 +30,10 @@ export default function MovieList({ navigation }) {
         <Text style={styles.pickupTitle}>{picupMovies.title}</Text>
       </View>
     </TouchableOpacity>
-    
-      <Text style={styles.listName}>公開中の映画</Text>
-
-      <FlatList
-        data={nowPlaying}
-        keyExtractor={item => item.id}
-        horizontal={true}
-        flashScrollIndicators
-        renderItem={({ item }) => (
-        <TouchableOpacity onPress={() => navigation.navigate("MovieDetail", {movie: item})}>
-            <View style={styles.movieContainer}>
-            <Image style={styles.movieImage} source={{uri: `https://image.tmdb.org/t/p/w300${item.poster_path}`}}></Image>
-            <Text numberOfLines={1} style={styles.movieTitle}>{item.title}</Text>
-            </View>
-        </TouchableOpacity>
-        )}>
-      </FlatList>
-
-      <Text style={styles.listName}>公開予定の映画</Text>
-
-      <FlatList
-        data={commingSoon}
-        keyExtractor={item => item.id}
-        horizontal={true}
-        flashScrollIndicators
-        renderItem={({ item }) => (
-        <TouchableOpacity onPress={() => navigation.navigate("MovieDetail", {movie: item})}>
-            <View style={styles.movieContainer}>
-            <Image style={styles.movieImage} source={{uri: `https://image.tmdb.org/t/p/w300${item.poster_path}`}}></Image>
-            <Text numberOfLines={1} style={styles.movieTitle}>{item.title}</Text>
-            </View>
-        </TouchableOpacity>
-        )}>
-      </FlatList>
-
-      <Text style={styles.listName}>人気の映画</Text>
-
-      <FlatList
-        data={populars}
-        keyExtractor={item => item.id}
-        horizontal={true}
-        flashScrollIndicators
-        renderItem={({ item }) => (
-        <TouchableOpacity onPress={() => navigation.navigate("MovieDetail", {movie: item})}>    
-            <View style={styles.movieContainer}>
-            <Image style={styles.movieImage} source={{uri: `https://image.tmdb.org/t/p/w300${item.poster_path}`}}></Image>
-            <Text numberOfLines={1} style={styles.movieTitle}>{item.title}</Text>
-            </View>
-        </TouchableOpacity>
-        )}>
-      </FlatList>
-
-      <Text style={styles.listName}>高評価の映画</Text>
-
-      <FlatList
-        data={topRated}
-        keyExtractor={item => item.id}
-        horizontal={true}
-        flashScrollIndicators
-        renderItem={({ item }) => (
-        <TouchableOpacity onPress={() => navigation.navigate("MovieDetail", {movie: item})}>    
-            <View style={styles.movieContainer}>
-            <Image style={styles.movieImage} source={{uri: `https://image.tmdb.org/t/p/w300${item.poster_path}`}}></Image>
-            <Text numberOfLines={1} style={styles.movieTitle}>{item.title}</Text>
-            </View>
-        </TouchableOpacity>
-        )}>
-      </FlatList>
+      <MovieFlatList url={requests.NOW_PLAYING} listName={'公開中の映画'} navigation={navigation}></MovieFlatList>
+      <MovieFlatList url={requests.COMMING_SOON} listName={'公開予定の映画'} navigation={navigation}></MovieFlatList>
+      <MovieFlatList url={requests.POPULARS} listName={'人気の映画'} navigation={navigation}></MovieFlatList>
+      <MovieFlatList url={requests.TOP_RATED} listName={'高評価の映画'} navigation={navigation}></MovieFlatList>
     </ScrollView>
   );
 }
