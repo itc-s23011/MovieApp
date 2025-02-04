@@ -5,13 +5,14 @@ import MovieDetail from './screens/MovieDetail';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity } from 'react-native';
 import SearchMovie from './screens/SearchMovie';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
 const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
 
-export default function App() {
-  return (
-    <NavigationContainer>
-      <Stack.Navigator>
+function Movie() {
+  return(
+    <Stack.Navigator>
         <Stack.Screen name="MovieList" component={MovieList} options={({navigation}) => ({
           title: "映画一覧",
           headerStyle: {
@@ -39,6 +40,15 @@ export default function App() {
           headerTintColor: '#fff'
         }}/>
       </Stack.Navigator>
-    </NavigationContainer>
   )
-};
+}
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Drawer.Navigator initialRouteName="映画">
+        <Drawer.Screen name="映画" component={Movie} />
+        {/*<Drawer.Screen name="Notifications" component={NotificationsScreen} /> */}
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+}
