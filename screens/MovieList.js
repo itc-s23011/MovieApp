@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import MovieFlatList from '../components/MovieFlatList';
 import { auth } from '../firebaseConfig';
-import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, signOut, onAuthStateChanged } from 'firebase/auth';
 
 export default function MovieList({ navigation }) {
   const [picupMovies, setPicupMovies] = useState({});

@@ -7,7 +7,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyDAGONL5Xo_QNFAGHJEi-ewEN0Vr_FjSaw",
     authDomain: "movieapp-8810c.firebaseapp.com",
     projectId: "movieapp-8810c",
-    storageBucket: "movieapp-8810c.firebasestorage.app",
+    storageBucket: "movieapp-8810c.appspot.com",
     messagingSenderId: "650219347154",
     appId: "1:650219347154:web:570cd21167d3f567aca10b",
 };

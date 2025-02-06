@@ -1,97 +1,97 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../firebaseConfig"; // Firebase設定をインポート
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, Button, Image, Alert } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { auth, storage } from "../firebaseConfig";
 
 export default function RegisterScreen({ navigation }) {
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [username, setUsername] = useState(""); // ユーザー名
-    const [error, setError] = useState(""); // エラーメッセージ
+    const [image, setImage] = useState(null);
 
-    // 新規登録処理
-    const handleRegister = () => {
-        if (!email || !password || !username) {
-            setError("すべてのフィールドを入力してください。");
-            return;
+    useEffect(() => {
+        (async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== "granted") {
+                Alert.alert("エラー", "写真のアクセス許可が必要です。");
+            }
+        })();
+    }, []);
+
+    // 画像を選択
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setImage(result.assets[0].uri);
         }
+    };
 
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
+    // ユーザー登録処理
+    const handleRegister = async () => {
+        try {
+            // Firebase Auth で新規登録
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
 
-                // Firestoreなどでユーザー名を追加保存する場合はここに処理を追加します
+            // 画像が選択されている場合、Firebase Storage にアップロード
+            if (image) {
+                const response = await fetch(image);
+                const blob = await response.blob();
+                const storageRef = ref(storage, `profilePictures/${user.uid}`);
+                await uploadBytes(storageRef, blob);
 
-                // ユーザー名を設定
-                updateProfile(user, { displayName: username })
-                    .then(() => {
-                        // ユーザー名を設定した後、映画一覧画面に遷移
-                        navigation.replace("MovieList");
-                    })
-                    .catch((error) => {
-                        setError(error.message);
-                    });
-            })
-            .catch((error) => {
-                setError(error.message);
-            });
+                // 画像の URL を取得
+                const imageUrl = await getDownloadURL(storageRef);
+
+                // 画像 URL をユーザー情報に追加
+                // ここで Firestore にユーザー情報を保存する処理を追加できます
+                console.log("画像URL:", imageUrl);
+            }
+
+            Alert.alert("成功", "登録が完了しました！");
+            navigation.navigate("Home"); // ホーム画面に遷移など
+
+        } catch (error) {
+            console.error(error);
+            Alert.alert("エラー", error.message);
+        }
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>新規登録</Text>
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ fontSize: 20, marginBottom: 20 }}>新規登録</Text>
             <TextInput
-                style={styles.input}
                 placeholder="ユーザー名"
                 value={username}
                 onChangeText={setUsername}
+                style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
             />
             <TextInput
-                style={styles.input}
                 placeholder="メールアドレス"
-                keyboardType="email-address"
                 value={email}
                 onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
             />
             <TextInput
-                style={styles.input}
                 placeholder="パスワード"
-                secureTextEntry
                 value={password}
                 onChangeText={setPassword}
+                secureTextEntry
+                style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
             />
-            <Button title="新規登録" onPress={handleRegister} />
+            <Button title="画像を選択" onPress={pickImage} />
+            {image && <Image source={{ uri: image }} style={{ width: 100, height: 100, marginTop: 10 }} />}
+            <Button title="登録" onPress={handleRegister} />
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#202328",
-        padding: 20,
-    },
-    title: {
-        color: "#fff",
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 20,
-    },
-    input: {
-        width: "100%",
-        height: 40,
-        borderColor: "#ccc",
-        borderWidth: 1,
-        borderRadius: 5,
-        paddingHorizontal: 10,
-        marginVertical: 10,
-        color: "#fff",
-    },
-    errorText: {
-        color: "red",
-        marginBottom: 10,
-    },
-});
