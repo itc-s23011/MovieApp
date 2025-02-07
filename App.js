@@ -5,7 +5,7 @@ import MovieDetail from './screens/MovieDetail';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity } from 'react-native';
 import SearchMovie from './screens/SearchMovie';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen'; // 新規登録画面をインポート
 
@@ -18,8 +18,8 @@ export default function App() {
         {/* ログイン画面 */}
         <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン" }} />
 
-        {/* 新規登録画面 */}
-        <Stack.Screen name="Register" component={RegisterScreen} options={{ title: "新規登録" }} />
+        {/* 新規登録画面 - ナビゲーションバー非表示 */}
+        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
 
         {/* 映画一覧画面 */}
         <Stack.Screen
