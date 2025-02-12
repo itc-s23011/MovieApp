@@ -13,26 +13,26 @@ import React from 'react';
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// ✅ 修正：Drawer ナビゲーターを最上位にする
+// 修正：Drawer ナビゲーターを最上位にする
 export default function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="映画">
-        <Drawer.Screen name="映画" component={MovieStack} options={{ headerShown: false }} />
+        <Drawer.Screen name="映画" component={MovieStack} />
       </Drawer.Navigator>
     </NavigationContainer>
   );
 }
 
-// ✅ 修正：スタックナビゲーターを別関数にまとめる
+// 修正：スタックナビゲーターを別関数にまとめる
 function MovieStack() {
   return (
     <Stack.Navigator initialRouteName="Login">
       {/* ログイン画面 */}
-      <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン" }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン", headerShown: false }} />
 
       {/* 新規登録画面 - ナビゲーションバー非表示 */}
-      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false, }} />
 
       {/* 映画一覧画面 */}
       <Stack.Screen

@@ -60,8 +60,10 @@ export default function RegisterScreen({ navigation }) {
                 console.log("画像URL:", imageUrl);
             }
 
-            Alert.alert("成功", "登録が完了しました！");
-            navigation.replace("Home"); // ホーム画面へ
+            // Alert.alert("成功", "登録が完了しました！");
+            navigation.reset({
+                index: 0, routes: [{ name: "MovieList" }],
+            }); // ホーム画面へ
 
         } catch (error) {
             console.error(error);
