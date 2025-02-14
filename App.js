@@ -18,7 +18,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="映画">
-        <Drawer.Screen name="映画" component={MovieStack} options={{ headerShown: false }} />
+        <Drawer.Screen name="映画" component={MovieStack} />
       </Drawer.Navigator>
     </NavigationContainer>
   );
