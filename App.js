@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -6,35 +7,67 @@ import MovieDetail from './screens/MovieDetail';
 import SearchMovie from './screens/SearchMovie';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
+import MypageScreen from './screens/MypageScreen';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity } from 'react-native';
-import React from 'react';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// 修正：Drawer ナビゲーターを最上位にする
 export default function App() {
+  const navigationRef = useRef(); // NavigationContainerのリファレンスを作成
+
   return (
-    <NavigationContainer>
-      <Drawer.Navigator initialRouteName="映画">
-        <Drawer.Screen name="映画" component={MovieStack} />
-      </Drawer.Navigator>
+    <NavigationContainer ref={navigationRef}>
+      <AuthNavigator navigationRef={navigationRef} />
     </NavigationContainer>
   );
 }
 
-// 修正：スタックナビゲーターを別関数にまとめる
+// 認証状態を監視するナビゲーション
+function AuthNavigator({ navigationRef }) {
+  const [user, setUser] = useState(null);
+  const auth = getAuth();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // ログイン後に MovieList 画面へ移動
+        navigationRef.current?.navigate("MovieList");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  return user ? <MainDrawer /> : <AuthStack />;
+}
+
+// ログイン/登録のスタックナビゲーション
+function AuthStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// メインのDrawerナビゲーション
+function MainDrawer() {
+  return (
+    <Drawer.Navigator initialRouteName="映画">
+      <Drawer.Screen name="映画" component={MovieStack} />
+      <Drawer.Screen name="マイページ" component={MypageScreen} />
+    </Drawer.Navigator>
+  );
+}
+
+// 映画関連のスタックナビゲーション
 function MovieStack() {
   return (
-    <Stack.Navigator initialRouteName="Login">
-      {/* ログイン画面 */}
-      <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン", headerShown: false }} />
-
-      {/* 新規登録画面 - ナビゲーションバー非表示 */}
-      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false, }} />
-
-      {/* 映画一覧画面 */}
+    <Stack.Navigator>
       <Stack.Screen
         name="MovieList"
         component={MovieList}
@@ -46,29 +79,25 @@ function MovieStack() {
             <TouchableOpacity onPress={() => navigation.navigate('SearchMovie')}>
               <Ionicons name="search" size={30} color="#ccc" />
             </TouchableOpacity>
-          )
+          ),
         })}
       />
-
-      {/* 映画詳細画面 */}
       <Stack.Screen
         name="MovieDetail"
         component={MovieDetail}
         options={{
           title: "映画詳細",
           headerStyle: { backgroundColor: '#202328' },
-          headerTintColor: '#fff'
+          headerTintColor: '#fff',
         }}
       />
-
-      {/* 映画検索画面 */}
       <Stack.Screen
         name="SearchMovie"
         component={SearchMovie}
         options={{
           title: "映画検索",
           headerStyle: { backgroundColor: '#202328' },
-          headerTintColor: '#fff'
+          headerTintColor: '#fff',
         }}
       />
     </Stack.Navigator>

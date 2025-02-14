@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getStorage } from "@firebase/storage";
+import { getFirestore } from "firebase/firestore";  // ← Firestore を追加
+import { getStorage } from "firebase/storage";  // ← インポート修正
 
 // Firebase 設定情報
 const firebaseConfig = {
@@ -15,6 +16,7 @@ const firebaseConfig = {
 // Firebase 初期化
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);  // ← Firestore を初期化
 const storage = getStorage(app);
 
-export { app, auth, storage };
+export { app, auth, db, storage };  // ← db をエクスポート

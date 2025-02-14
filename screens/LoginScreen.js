@@ -11,7 +11,7 @@ export default function LoginScreen({ navigation }) {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                navigation.replace("MovieList"); // ログイン済みなら映画一覧へ
+                navigation.navigate("MovieList"); // ログイン済みなら映画一覧へ
             }
         });
         return () => unsubscribe();

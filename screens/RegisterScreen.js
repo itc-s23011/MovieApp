@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, Image, Alert, ActivityIndicator } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { auth, storage } from "../firebaseConfig";
+import * as FileSystem from "expo-file-system"; // 追加
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebaseConfig";  // Firebase Firestore のみ利用
 
 export default function RegisterScreen({ navigation }) {
     const [username, setUsername] = useState("");
@@ -21,7 +22,7 @@ export default function RegisterScreen({ navigation }) {
         })();
     }, []);
 
-    // 画像を選択
+    // 画像を選択してデバイスに保存
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -31,7 +32,20 @@ export default function RegisterScreen({ navigation }) {
         });
 
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            const localUri = result.assets[0].uri;
+            const fileName = localUri.split('/').pop();
+            const newPath = `${FileSystem.documentDirectory}${fileName}`;
+
+            try {
+                await FileSystem.moveAsync({
+                    from: localUri,
+                    to: newPath,
+                });
+                setImage(newPath);  // ローカルパスを保存
+            } catch (error) {
+                console.error("画像の保存に失敗:", error);
+                Alert.alert("エラー", "画像の保存に失敗しました。");
+            }
         }
     };
 
@@ -51,20 +65,26 @@ export default function RegisterScreen({ navigation }) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            if (image) {
-                const response = await fetch(image);
-                const blob = await response.blob();
-                const storageRef = ref(storage, `profilePictures/${user.uid}`);
-                await uploadBytes(storageRef, blob);
-                const imageUrl = await getDownloadURL(storageRef);
-                console.log("画像URL:", imageUrl);
-            }
+            // Firebase Auth のユーザープロフィールを更新（Firebase Storage は使用しない）
+            await updateProfile(user, {
+                displayName: username, // ユーザー名を保存
+            });
 
-            // Alert.alert("成功", "登録が完了しました！");
+            // Firestore にユーザー情報を保存
+            await setDoc(doc(db, "users", user.uid), {
+                userName: username,
+                email: user.email,
+                localPhotoPath: image,  // ローカル保存した画像のパス
+                createdAt: new Date()
+            });
+
+            Alert.alert("成功", "登録が完了しました！");
+
+            // ナビゲーションを `MainDrawer` にリセット（「映画」画面へ遷移）
             navigation.reset({
-                index: 0, routes: [{ name: "MovieList" }],
-            }); // ホーム画面へ
-
+                index: 0,
+                routes: [{ name: "映画" }],
+            });
         } catch (error) {
             console.error(error);
             Alert.alert("エラー", error.message);
