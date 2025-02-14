@@ -1,44 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Text, View, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import Poster from "../components/Poster";
 import Vote from "../components/Vote";
-import { FontAwesome } from "@expo/vector-icons";
-import { db } from "../firebaseConfig";
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 
-export default function MovieDetail(props) {
-    const { movie } = props.route.params;
-    const [rating, setRating] = useState(0);
-    const [averageRating, setAverageRating] = useState(0);
-
-
-    // ⭐ Firestore にデータを送信
-    const submitRating = async (selectedRating) => {
-        setRating(selectedRating);
-        try {
-            await addDoc(collection(db, "reviews"), {
-                userId: "user123", // ユーザーID（後で認証を導入）
-                movieId: movie.id,
-                rating: selectedRating,
-                timestamp: new Date(),
-            });
-        } catch (error) {
-            console.error("Error submitting rating:", error);
-        }
-    };
-
-    // ⭐ Firestore から映画の平均評価を取得
-    // const fetchAverageRating = async () => {
-    //     try {
-    //         const reviewsQuery = query(collection(db, "reviews"), where("movieId", "==", movie.id));
-    //         const querySnapshot = await getDocs(reviewsQuery);
-    //         const ratings = querySnapshot.docs.map(doc => doc.data().rating);
-    //         const avgRating = ratings.length ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1) : "0";
-    //         setAverageRating(avgRating);
-    //     } catch (error) {
-    //         console.error("Error fetching rating:", error);
-    //     }
-    // };
+export default function MovieDetail({ route, navigation }) {
+    const { movie } = route.params;
 
     return (
         <ScrollView style={styles.container}>
@@ -50,20 +16,13 @@ export default function MovieDetail(props) {
                 <Text style={styles.movieReleaseDate}>{movie.release_date}</Text>
                 <Text style={styles.overview}>{movie.overview}</Text>
 
-                {/* ⭐ 星評価 UI ⭐ */}
-                <View style={styles.starContainer}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                        <TouchableOpacity key={star} onPress={() => submitRating(star)}>
-                            <FontAwesome
-                                name={star <= rating ? "star" : "star-o"}
-                                size={32}
-                                color={star <= rating ? "gold" : "gray"}
-                            />
-                        </TouchableOpacity>
-                    ))}
-                </View>
-                <Text style={styles.ratingText}>あなたの評価: {rating}</Text>
-                <Text style={styles.ratingText}>平均評価: {averageRating}</Text>
+                {/* ⭐ レビューを書くボタン → ReviewScreen へ遷移 */}
+                <TouchableOpacity
+                    style={styles.reviewButton}
+                    onPress={() => navigation.navigate("ReviewScreen", { movieId: movie.id })}
+                >
+                    <Text style={styles.reviewButtonText}>レビューを書く</Text>
+                </TouchableOpacity>
             </View>
         </ScrollView>
     );
@@ -91,13 +50,16 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 18,
     },
-    starContainer: {
-        flexDirection: "row",
-        marginVertical: 10,
+    reviewButton: {
+        marginTop: 15,
+        paddingVertical: 10,
+        backgroundColor: "#ffcc00",
+        alignItems: "center",
+        borderRadius: 5,
     },
-    ratingText: {
-        color: "#fff",
+    reviewButtonText: {
+        color: "#202328",
         fontSize: 18,
-        marginTop: 5,
+        fontWeight: "bold",
     },
 });

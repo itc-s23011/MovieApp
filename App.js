@@ -6,6 +6,7 @@ import MovieDetail from './screens/MovieDetail';
 import SearchMovie from './screens/SearchMovie';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
+import ReviewScreen from './screens/ReviewScreen'; // ✅ 修正：綴りミス修正 & 追加
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity } from 'react-native';
 import React from 'react';
@@ -29,11 +30,10 @@ function MovieStack() {
   return (
     <Stack.Navigator initialRouteName="Login">
       {/* ログイン画面 */}
-      <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン", headerShown: false }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン" }} />
 
       {/* 新規登録画面 - ナビゲーションバー非表示 */}
       <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
-
 
       {/* 映画一覧画面 */}
       <Stack.Screen
@@ -68,6 +68,17 @@ function MovieStack() {
         component={SearchMovie}
         options={{
           title: "映画検索",
+          headerStyle: { backgroundColor: '#202328' },
+          headerTintColor: '#fff'
+        }}
+      />
+
+      {/* ✅ 追加：レビュー投稿画面 */}
+      <Stack.Screen
+        name="ReviewScreen"
+        component={ReviewScreen}
+        options={{
+          title: "レビューを書く",
           headerStyle: { backgroundColor: '#202328' },
           headerTintColor: '#fff'
         }}
