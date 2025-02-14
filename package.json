@@ -10,14 +10,19 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^14.0.4",
     "@react-navigation/drawer": "^7.1.1",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/native-stack": "^7.2.0",
     "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
     "expo": "~52.0.25",
     "expo-image-picker": "^16.0.5",
     "expo-status-bar": "~2.0.1",
-    "firebase": "^11.2.0",
+    "express": "^4.21.2",
+    "firebase": "^11.3.0",
+    "mongoose": "^8.10.0",
     "prop-types": "^15.8.1",
     "react": "18.3.1",
     "react-native": "0.76.6",
@@ -31,5 +36,16 @@
   "devDependencies": {
     "@babel/core": "^7.20.0"
   },
-  "private": true
+  "private": true,
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itc-s23011/MovieApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/itc-s23011/MovieApp/issues"
+  },
+  "homepage": "https://github.com/itc-s23011/MovieApp#readme"
 }
