@@ -29,7 +29,7 @@ function MovieStack() {
   return (
     <Stack.Navigator initialRouteName="Login">
       {/* ログイン画面 */}
-      <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン" }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン", headerShown: false }} />
 
       {/* 新規登録画面 - ナビゲーションバー非表示 */}
       <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
