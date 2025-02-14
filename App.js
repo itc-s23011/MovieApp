@@ -9,8 +9,6 @@ import RegisterScreen from './screens/RegisterScreen';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity } from 'react-native';
 import React from 'react';
-import firebaetest from './components/firebaestest';
-
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
