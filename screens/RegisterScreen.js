@@ -3,7 +3,8 @@ import { View, Text, TextInput, Button, Image, Alert, ActivityIndicator } from "
 import * as ImagePicker from "expo-image-picker";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { auth, storage } from "../firebaseConfig";
+import { auth, storage, db } from "../firebaseConfig";
+import { collection, doc, setDoc } from "firebase/firestore";
 
 export default function RegisterScreen({ navigation }) {
     const [username, setUsername] = useState("");
@@ -35,6 +36,21 @@ export default function RegisterScreen({ navigation }) {
         }
     };
 
+    // Firebase Storage に画像をアップロード
+    const uploadImage = async (uid) => {
+        if (!image) return null;
+        try {
+            const response = await fetch(image);
+            const blob = await response.blob();
+            const storageRef = ref(storage, `profilePictures/${uid}`);
+            await uploadBytes(storageRef, blob);
+            return await getDownloadURL(storageRef);
+        } catch (error) {
+            console.error("画像アップロードエラー:", error);
+            return null;
+        }
+    };
+
     // ユーザー登録処理
     const handleRegister = async () => {
         if (!username.trim() || !email.trim() || !password.trim()) {
@@ -48,23 +64,26 @@ export default function RegisterScreen({ navigation }) {
 
         setLoading(true);
         try {
+            // Firebase Authentication でユーザー作成
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            if (image) {
-                const response = await fetch(image);
-                const blob = await response.blob();
-                const storageRef = ref(storage, `profilePictures/${user.uid}`);
-                await uploadBytes(storageRef, blob);
-                const imageUrl = await getDownloadURL(storageRef);
-                console.log("画像URL:", imageUrl);
-            }
+            // プロフィール画像をアップロードし、URL を取得
+            const imageUrl = await uploadImage(user.uid);
+
+            // Firestore にユーザー情報を保存
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                email: email,
+                username: username,
+                profileImage: imageUrl || null, // 画像がない場合は null
+                timestamp: new Date(),
+            });
 
             Alert.alert("成功", "登録が完了しました！");
-            navigation.replace("Home"); // ホーム画面へ
-
+            navigation.replace("Login"); // ログイン画面へ遷移
         } catch (error) {
-            console.error(error);
+            console.error("登録エラー:", error);
             Alert.alert("エラー", error.message);
         } finally {
             setLoading(false);
@@ -103,11 +122,7 @@ export default function RegisterScreen({ navigation }) {
             ) : (
                 <>
                     <Button title="登録" onPress={handleRegister} />
-                    <Button
-                        title="ログイン"
-                        onPress={() => navigation.replace("Login")}
-                        color="gray"
-                    />
+                    <Button title="ログイン" onPress={() => navigation.replace("Login")} color="gray" />
                 </>
             )}
         </View>
