@@ -65,38 +65,45 @@ export default function RegisterScreen({ navigation }) {
     };
 
     return (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-            <Text style={{ fontSize: 20, marginBottom: 20 }}>新規登録</Text>
-            <TextInput
-                placeholder="ユーザー名"
-                value={username}
-                onChangeText={setUsername}
-                style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
-            />
-            <TextInput
-                placeholder="メールアドレス"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
-            />
-            <TextInput
-                placeholder="パスワード (6文字以上)"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
-            />
+        <View style={{ flex: 1, padding: 20 }}>
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <Text style={{ fontSize: 20, marginBottom: 20 }}>新規登録</Text>
+                <TextInput
+                    placeholder="ユーザー名"
+                    value={username}
+                    onChangeText={setUsername}
+                    style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
+                />
+                <TextInput
+                    placeholder="メールアドレス"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
+                />
+                <TextInput
+                    placeholder="パスワード (6文字以上)"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    style={{ width: 300, height: 40, borderWidth: 1, marginBottom: 10, paddingHorizontal: 10 }}
+                />
 
-            {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
-            ) : (
-                <>
+                {loading ? (
+                    <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
+                ) : (
                     <Button title="登録" onPress={handleRegister} disabled={loading} />
-                    <Button title="ログイン" onPress={() => navigation.replace("Login")} color="gray" disabled={loading} />
-                </>
-            )}
+                )}
+            </View>
+
+            <View style={{ marginBottom: 60, alignItems: "center" }}>
+                <Button
+                    title="ログイン"
+                    onPress={() => navigation.replace("Login")}
+                    disabled={loading}
+                />
+            </View>
         </View>
     );
 }
