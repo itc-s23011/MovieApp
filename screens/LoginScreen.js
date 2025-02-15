@@ -70,17 +70,21 @@ export default function LoginScreen({ navigation }) {
                 {loading ? (
                     <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
                 ) : (
-                    <Button title="ログイン" onPress={handleLogin} disabled={loading} />
+                    <>
+                        <Button title="ログイン" onPress={handleLogin} />
+
+                        {/* <Button title="新規登録" onPress={() => navigation.navigate("Register")} /> */}
+                    </>
                 )}
             </View>
-
-            <View style={{ marginBottom: 60, alignItems: "center" }}>
+            <View style={{ marginBottom: 100, alignItems: "center" }}>
                 <Button
                     title="新規登録"
                     onPress={() => navigation.navigate("Register")}
                     disabled={loading}
                 />
             </View>
-        </View>
+
+        </View >
     );
 }
