@@ -68,6 +68,13 @@ export default function RegisterScreen({ navigation }) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "映画" }],
+            });
+
+            Alert.alert("成功", "登録が完了しました！");
+
             // プロフィール画像をアップロードし、URL を取得
             const imageUrl = await uploadImage(user.uid);
 
@@ -80,8 +87,6 @@ export default function RegisterScreen({ navigation }) {
                 timestamp: new Date(),
             });
 
-            Alert.alert("成功", "登録が完了しました！");
-            navigation.replace("Login"); // ログイン画面へ遷移
         } catch (error) {
             console.error("登録エラー:", error);
             Alert.alert("エラー", error.message);
