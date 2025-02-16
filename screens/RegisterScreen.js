@@ -43,7 +43,7 @@ export default function RegisterScreen({ navigation }) {
 
             navigation.reset({
                 index: 0,
-                routes: [{ name: "映画" }],
+                routes: [{ name: "Main" }],
             });
 
             Alert.alert("成功", "登録が完了しました！");
