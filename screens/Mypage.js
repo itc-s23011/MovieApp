@@ -11,6 +11,8 @@ const MypageScreen = () => {
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
     const navigation = useNavigation(); // useNavigation フックを使用
+    const username = useState()
+
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -19,8 +21,11 @@ const MypageScreen = () => {
                 const userDoc = await getDoc(doc(db, "users", currentUser.uid));
                 if (userDoc.exists()) {
                     setUserData(userDoc.data());
+                    console.log(userDoc.data())
+                    username = userDoc.data();
                 } else {
                     Alert.alert("エラー", "ユーザー情報が見つかりませんでした。");
+                    console.log("エラー", "ユーザー情報が見つかりませんでした")
                 }
             }
         });
@@ -28,10 +33,11 @@ const MypageScreen = () => {
         return () => unsubscribe();
     }, []);
 
+
     const handleLogout = async () => {
         try {
             await auth.signOut();
-            navigation.navigate("LoginScreen"); // 画面遷移
+            navigation.navigate("Login"); // 画面遷移
         } catch (error) {
             Alert.alert("ログアウトエラー", error.message);
         }
@@ -51,6 +57,7 @@ const MypageScreen = () => {
         { id: "3", title: "作品C" },
     ];
 
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -59,7 +66,8 @@ const MypageScreen = () => {
 
             <View style={styles.profileSection}>
                 <View style={styles.userInfo}>
-                    <Text style={styles.userName}>{user.displayName ?? "名無し"}</Text>
+                    <Text style={styles.userName}>{username.username}</Text>
+
                     <Text style={styles.userEmail}>{user.email}</Text>
                 </View>
                 {userData?.localPhotoPath ? (

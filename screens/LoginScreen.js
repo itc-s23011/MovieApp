@@ -11,7 +11,7 @@ export default function LoginScreen({ navigation }) {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                navigation.replace("MovieList"); // ログイン済みなら映画一覧へ
+                navigation.replace("Main"); // ログイン済みなら映画一覧へ
             }
         });
         return () => unsubscribe();
@@ -31,7 +31,7 @@ export default function LoginScreen({ navigation }) {
         setLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            navigation.replace("MovieList");
+            navigation.replace("Main");
         } catch (error) {
             let errorMessage = "ログインに失敗しました。";
             if (error.code === "auth/user-not-found") {

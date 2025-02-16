@@ -6,7 +6,8 @@ import MovieDetail from './screens/MovieDetail';
 import SearchMovie from './screens/SearchMovie';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import ReviewScreen from './screens/ReviewScreen'; // ✅ 修正：綴りミス修正 & 追加
+import ReviewScreen from './screens/ReviewScreen';
+import MypageScreen from './screens/Mypage';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TouchableOpacity } from 'react-native';
 import React from 'react';
@@ -14,28 +15,47 @@ import React from 'react';
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// ✅ 修正：Drawer ナビゲーターを最上位にする
-export default function App() {
+// ✅ 最初にスタックナビゲーションでログイン管理
+function AuthStack() {
   return (
-    <NavigationContainer>
-      <Drawer.Navigator initialRouteName="映画">
-        <Drawer.Screen name="映画" component={MovieStack} />
-      </Drawer.Navigator>
-    </NavigationContainer>
+    <Stack.Navigator initialRouteName="Login">
+      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Main" component={MainDrawer} options={{ headerShown: false }} />
+    </Stack.Navigator>
   );
 }
 
-// ✅ 修正：スタックナビゲーターを別関数にまとめる
+// ✅ メイン画面を Drawer で管理
+function MainDrawer() {
+  return (
+    <Drawer.Navigator initialRouteName="映画">
+      <Drawer.Screen
+        name="映画"
+        component={MovieStack}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="film-outline" size={size} color={color} />
+          )
+        }}
+      />
+      <Drawer.Screen
+        name="マイページ"
+        component={MypageScreen}
+        options={{
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          )
+        }}
+      />
+    </Drawer.Navigator>
+  );
+}
+
+// ✅ 映画系の画面を管理するスタックナビゲーション
 function MovieStack() {
   return (
-    <Stack.Navigator initialRouteName="Login">
-      {/* ログイン画面 */}
-      <Stack.Screen name="Login" component={LoginScreen} options={{ title: "ログイン", headerShown: false }} />
-
-      {/* 新規登録画面 - ナビゲーションバー非表示 */}
-      <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
-
-      {/* 映画一覧画面 */}
+    <Stack.Navigator>
       <Stack.Screen
         name="MovieList"
         component={MovieList}
@@ -50,8 +70,6 @@ function MovieStack() {
           )
         })}
       />
-
-      {/* 映画詳細画面 */}
       <Stack.Screen
         name="MovieDetail"
         component={MovieDetail}
@@ -61,8 +79,6 @@ function MovieStack() {
           headerTintColor: '#fff'
         }}
       />
-
-      {/* 映画検索画面 */}
       <Stack.Screen
         name="SearchMovie"
         component={SearchMovie}
@@ -72,8 +88,6 @@ function MovieStack() {
           headerTintColor: '#fff'
         }}
       />
-
-      {/* ✅ 追加：レビュー投稿画面 */}
       <Stack.Screen
         name="ReviewScreen"
         component={ReviewScreen}
@@ -84,5 +98,14 @@ function MovieStack() {
         }}
       />
     </Stack.Navigator>
+  );
+}
+
+// ✅ `NavigationContainer` のルートで `AuthStack` を管理
+export default function App() {
+  return (
+    <NavigationContainer>
+      <AuthStack />
+    </NavigationContainer>
   );
 }
