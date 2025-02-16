@@ -7,6 +7,7 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { auth, db } from "../firebaseConfig";
@@ -14,6 +15,7 @@ import {
   collection,
   addDoc,
   doc,
+  deleteDoc,
   onSnapshot,
   query,
   where,
@@ -43,7 +45,7 @@ export default function ReviewScreen({ route, navigation }) {
     }
   }, []);
 
-  // mode が "view" の場合のみ Firestore からレビューをリアルタイム取得
+  // mode が "view" の場合のみ、Firestore からレビューをリアルタイム取得
   useEffect(() => {
     if (mode === "view") {
       const reviewsQuery = query(
@@ -89,6 +91,34 @@ export default function ReviewScreen({ route, navigation }) {
     }
   };
 
+  // レビュー削除の関数
+  const deleteReview = async (reviewId) => {
+    Alert.alert(
+      "レビュー削除",
+      "本当にこのレビューを削除しますか？",
+      [
+        {
+          text: "キャンセル",
+          style: "cancel",
+        },
+        {
+          text: "削除する",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, "reviews", reviewId));
+              Alert.alert("レビューが削除されました。");
+            } catch (error) {
+              console.error("Error deleting review:", error);
+              Alert.alert("削除に失敗しました。");
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   if (mode === "write") {
     return (
       <View style={styles.container}>
@@ -130,7 +160,16 @@ export default function ReviewScreen({ route, navigation }) {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View style={styles.reviewItem}>
-                <Text style={styles.reviewUser}>{item.username}</Text>
+                <View style={styles.reviewHeader}>
+                  <Text style={styles.reviewUser}>{item.username}</Text>
+                  {/* ログイン中のユーザーが投稿したレビューの場合にのみ削除ボタンを表示 */}
+                  {auth.currentUser &&
+                    auth.currentUser.uid === item.userId && (
+                      <TouchableOpacity onPress={() => deleteReview(item.id)}>
+                        <FontAwesome name="trash" size={20} color="red" />
+                      </TouchableOpacity>
+                    )}
+                </View>
                 <View style={styles.starContainer}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <FontAwesome
@@ -185,6 +224,11 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     marginBottom: 10,
+  },
+  reviewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   reviewUser: { fontSize: 16, fontWeight: "bold", color: "#ffcc00" },
   reviewText: { fontSize: 16, color: "#fff", marginTop: 5 },
