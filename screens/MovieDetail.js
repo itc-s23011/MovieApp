@@ -2,13 +2,13 @@ import React from "react";
 import { Text, View, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import Poster from "../components/Poster";
 import Vote from "../components/Vote";
+import WatchProviders from "../components/WatchProviders";
 
 export default function MovieDetail({ route, navigation }) {
   const { movie } = route.params;
 
   return (
     <ScrollView style={styles.container}>
-      {/* ポスター表示 */}
       <Poster posterPath={movie.poster_path} imageWidth={780} imageHeight={480} />
       <View style={styles.textBox}>
         <Text style={styles.title}>{movie.title}</Text>
@@ -16,22 +16,19 @@ export default function MovieDetail({ route, navigation }) {
         <Text style={styles.movieReleaseDate}>{movie.release_date}</Text>
         <Text style={styles.overview}>{movie.overview}</Text>
 
-        {/* 「レビューを書く」ボタン */}
+        {/* 視聴リンク情報 */}
+        <WatchProviders movieId={movie.id} />
+
+        {/* 既存のボタン */}
         <TouchableOpacity
           style={styles.reviewButton}
-          onPress={() =>
-            navigation.navigate("ReviewScreen", { movieId: movie.id, mode: "write" })
-          }
+          onPress={() => navigation.navigate("ReviewScreen", { movieId: movie.id, mode: "write" })}
         >
           <Text style={styles.reviewButtonText}>レビューを書く</Text>
         </TouchableOpacity>
-
-        {/* 「レビューを見る」ボタン */}
         <TouchableOpacity
           style={styles.reviewButton}
-          onPress={() =>
-            navigation.navigate("ReviewScreen", { movieId: movie.id, mode: "view" })
-          }
+          onPress={() => navigation.navigate("ReviewScreen", { movieId: movie.id, mode: "view" })}
         >
           <Text style={styles.reviewButtonText}>レビューを見る</Text>
         </TouchableOpacity>
