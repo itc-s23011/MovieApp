@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet, Image, Linking } from "react-native";
 
-
+//a//
 const TMDB_API_KEY = "551c2d4f95bbc4929d5ff3ebab76e620";
 const BASE_URL = "https://api.themoviedb.org/3";
 

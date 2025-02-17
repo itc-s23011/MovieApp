@@ -6,7 +6,7 @@ import WatchProviders from "../components/WatchProviders";
 
 export default function MovieDetail({ route, navigation }) {
   const { movie } = route.params;
-
+//a//
   return (
     <ScrollView style={styles.container}>
       <Poster posterPath={movie.poster_path} imageWidth={780} imageHeight={480} />
