@@ -1,17 +1,72 @@
-import React, { useState } from "react";
-import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Text, View, ScrollView, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
 import Poster from "../components/Poster";
 import Vote from "../components/Vote";
 import WatchProviders from "../components/WatchProviders";
 import { FontAwesome } from "@expo/vector-icons";
 import { auth, db } from "../firebaseConfig";
 import { collection, addDoc } from "firebase/firestore";
+import axios from "axios";
+import { requests } from "../request";
 
 export default function MovieDetail({ route, navigation }) {
   const { movie } = route.params;
+  const [movieDetails, setMovieDetails] = useState(movie);
+  const [loading, setLoading] = useState(false);
   const [favoriteAdded, setFavoriteAdded] = useState(false);
 
-  // ハートボタンを押したらお気に入りに登録する処理
+  useEffect(() => {
+    async function fetchMovieDetails() {
+      if (!movie || !movie.title || !movie.overview) {
+        setLoading(true);
+        try {
+          const responseJa = await axios.get(requests.MOVIE_DETAILS(movie.id, "ja"));
+          let movieData = responseJa.data;
+
+          if (!movieData.title || !movieData.overview) {
+            const responseEn = await axios.get(requests.MOVIE_DETAILS(movie.id, "en"));
+            const movieDataEn = responseEn.data;
+
+            movieData = {
+              ...movieDataEn,
+              title: movieData.title || movieDataEn.title,
+              overview: movieData.overview || movieDataEn.overview,
+            };
+          }
+
+          setMovieDetails(movieData);
+        } catch (error) {
+          console.error("映画詳細の取得エラー:", error);
+          Alert.alert("エラー", "映画の詳細が取得できませんでした。");
+        } finally {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchMovieDetails();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>
+    );
+  }
+
+  if (!movieDetails) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>映画の詳細情報が取得できませんでした。</Text>
+      </View>
+    );
+  }
+
+  const displayTitle = movieDetails.title || "タイトル不明";
+  const displayOverview = movieDetails.overview || "概要情報がありません。";
+  const displayReleaseDate = movieDetails.release_date || "公開日不明";
+
   const handleFavorite = async () => {
     if (!auth.currentUser) {
       Alert.alert("お気に入り登録", "お気に入り登録するにはログインが必要です。");
@@ -20,9 +75,9 @@ export default function MovieDetail({ route, navigation }) {
     try {
       await addDoc(collection(db, "favorites"), {
         userId: auth.currentUser.uid,
-        movieId: movie.id,
-        title: movie.title,
-        poster_path: movie.poster_path,
+        movieId: movieDetails.id,
+        title: displayTitle,
+        poster_path: movieDetails.poster_path,
         addedAt: new Date(),
       });
       setFavoriteAdded(true);
@@ -35,31 +90,33 @@ export default function MovieDetail({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <Poster posterPath={movie.poster_path} imageWidth={780} imageHeight={480} />
+      <Poster posterPath={movieDetails.poster_path} imageWidth={780} imageHeight={480} />
       <View style={styles.textBox}>
-        <Text style={styles.title}>{movie.title}</Text>
-        <Vote vote_average={movie.vote_average} vote_count={movie.vote_count} />
-        <Text style={styles.movieReleaseDate}>{movie.release_date}</Text>
-        <Text style={styles.overview}>{movie.overview}</Text>
+        <Text style={styles.title}>{displayTitle}</Text>
+        <Vote vote_average={movieDetails.vote_average || 0} vote_count={movieDetails.vote_count || 0} />
+        <Text style={styles.movieReleaseDate}>{displayReleaseDate}</Text>
+        <Text style={styles.overview}>{displayOverview}</Text>
 
         {/* 視聴リンク情報 */}
-        <WatchProviders movieId={movie.id} />
+        <WatchProviders movieId={movieDetails.id} />
 
-        {/* ここからお気に入り登録ボタン */}
+        {/* お気に入り登録ボタン */}
         <TouchableOpacity style={styles.favoriteButton} onPress={handleFavorite}>
           <FontAwesome name={favoriteAdded ? "heart" : "heart-o"} size={32} color="red" />
         </TouchableOpacity>
 
-        {/* 既存のレビュー関連ボタン */}
+        {/* ✅ 追加: レビューを書くボタン */}
         <TouchableOpacity
           style={styles.reviewButton}
-          onPress={() => navigation.navigate("ReviewScreen", { movieId: movie.id, mode: "write" })}
+          onPress={() => navigation.navigate("ReviewScreen", { movieId: movieDetails.id, mode: "write" })}
         >
           <Text style={styles.reviewButtonText}>レビューを書く</Text>
         </TouchableOpacity>
+
+        {/* ✅ 追加: レビューを見るボタン */}
         <TouchableOpacity
           style={styles.reviewButton}
-          onPress={() => navigation.navigate("ReviewScreen", { movieId: movie.id, mode: "view" })}
+          onPress={() => navigation.navigate("ReviewScreen", { movieId: movieDetails.id, mode: "view" })}
         >
           <Text style={styles.reviewButtonText}>レビューを見る</Text>
         </TouchableOpacity>
@@ -70,6 +127,8 @@ export default function MovieDetail({ route, navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#202328" },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#202328" },
+  errorText: { color: "white", fontSize: 20, textAlign: "center", marginTop: 20 },
   textBox: { paddingHorizontal: 30, paddingVertical: 5 },
   title: { color: "#fff", fontSize: 26, fontWeight: "bold" },
   movieReleaseDate: { color: "#ccc", marginBottom: 10 },

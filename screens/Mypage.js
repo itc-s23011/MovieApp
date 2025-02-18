@@ -163,7 +163,7 @@ const MypageScreen = () => {
         )}
 
         {/* 既存の作品一覧（ダミーデータ） */}
-        <Text style={styles.sectionTitle}>作品一覧</Text>
+        {/* <Text style={styles.sectionTitle}>作品一覧</Text>
         <FlatList
           data={[
             { id: "1", title: "作品A" },
@@ -176,7 +176,7 @@ const MypageScreen = () => {
               <Text style={styles.workTitle}>{item.title}</Text>
             </View>
           )}
-        />
+        /> */}
       </View>
 
       <View style={styles.logoutContainer}>
