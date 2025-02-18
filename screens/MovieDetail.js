@@ -9,6 +9,31 @@ import { collection, addDoc } from "firebase/firestore";
 import axios from "axios";
 import { requests } from "../request";
 
+// ✅ DeepL API を使った翻訳関数
+const translateText = async (text) => {
+  if (!text || text.trim() === "") return text;
+
+  const API_KEY = "d8c17c36-34f4-4922-9f38-ca863c7ba582:fx"; // 🔹 DeepL APIキーを取得して設定
+  const url = "https://api-free.deepl.com/v2/translate";
+
+  try {
+    const response = await axios.post(
+      url,
+      new URLSearchParams({
+        auth_key: API_KEY,
+        text: text,
+        target_lang: "JA", // 🔹 日本語に翻訳
+      }),
+      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+    );
+
+    return response.data.translations[0].text || text;
+  } catch (error) {
+    console.error("DeepL 翻訳エラー:", error.message);
+    return text; // ✅ 翻訳エラー時は元の英語をそのまま表示
+  }
+};
+
 export default function MovieDetail({ route, navigation }) {
   const { movie } = route.params;
   const [movieDetails, setMovieDetails] = useState(movie);
@@ -25,13 +50,19 @@ export default function MovieDetail({ route, navigation }) {
 
           if (!movieData.title || !movieData.overview) {
             const responseEn = await axios.get(requests.MOVIE_DETAILS(movie.id, "en"));
-            const movieDataEn = responseEn.data;
+            let movieDataEn = responseEn.data;
 
             movieData = {
               ...movieDataEn,
               title: movieData.title || movieDataEn.title,
               overview: movieData.overview || movieDataEn.overview,
             };
+
+            // ✅ `overview` が英語なら日本語に翻訳
+            if (movieData.original_language === "en" && movieData.overview) {
+              const translatedOverview = await translateText(movieData.overview);
+              movieData.overview = translatedOverview;
+            }
           }
 
           setMovieDetails(movieData);
