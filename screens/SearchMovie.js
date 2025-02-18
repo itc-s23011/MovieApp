@@ -6,10 +6,34 @@ import axios from 'axios';
 import Poster from "../components/Poster";
 import Vote from "../components/Vote";
 
+// ✅ DeepL API を使った翻訳関数
+const translateText = async (text) => {
+    if (!text || text.trim() === "") return text;
+
+    const API_KEY = "d8c17c36-34f4-4922-9f38-ca863c7ba582:fx"; // 🔹 DeepL APIキーを設定
+    const url = "https://api-free.deepl.com/v2/translate";
+
+    try {
+        const response = await axios.post(
+            url,
+            new URLSearchParams({
+                auth_key: API_KEY,
+                text: text,
+                target_lang: "JA", // 🔹 日本語に翻訳
+            }),
+            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+        );
+
+        return response.data.translations[0].text || text;
+    } catch (error) {
+        console.error("DeepL 翻訳エラー:", error.message);
+        return text; // ✅ 翻訳エラー時は元の英語をそのまま表示
+    }
+};
+
 export default function SearchMovie({ navigation }) {
     const [text, onChangeText] = useState("");
     const [movies, setSearchMovies] = useState([]); // ✅ 初期値を `[]` に変更
-
     const numColumns = 3;
 
     async function searchMovies() {
@@ -22,7 +46,17 @@ export default function SearchMovie({ navigation }) {
                 return;
             }
 
-            setSearchMovies(results.data.results);
+            // ✅ `overview` を日本語に翻訳する
+            const moviesWithTranslation = await Promise.all(
+                results.data.results.map(async (movie) => {
+                    if (movie.original_language === "en" && movie.overview) {
+                        movie.overview = await translateText(movie.overview);
+                    }
+                    return movie;
+                })
+            );
+
+            setSearchMovies(moviesWithTranslation);
         } catch (error) {
             console.log("検索エラー:", error);
             alert("映画の検索中にエラーが発生しました。");
@@ -60,7 +94,6 @@ export default function SearchMovie({ navigation }) {
                     </TouchableOpacity>
                 )}
             />
-
         </View>
     );
 }
