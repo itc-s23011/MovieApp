@@ -9,11 +9,11 @@ import { collection, addDoc } from "firebase/firestore";
 import axios from "axios";
 import { requests } from "../request";
 
-// ✅ DeepL API を使った翻訳関数（すべての言語を日本語に変換）
+// ✅ DeepL API を使った翻訳関数
 const translateText = async (text) => {
   if (!text || text.trim() === "") return text;
 
-  const API_KEY = "d8c17c36-34f4-4922-9f38-ca863c7ba582:fx";
+  const API_KEY = "d8c17c36-34f4-4922-9f38-ca863c7ba582:fx"; // DeepL APIキー
   const url = "https://api-free.deepl.com/v2/translate";
 
   try {
@@ -26,11 +26,10 @@ const translateText = async (text) => {
       }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
-
     return response.data.translations[0]?.text || text;
   } catch (error) {
     console.error("DeepL 翻訳エラー:", error.message);
-    return text; // ✅ 翻訳エラー時は元の英語をそのまま表示
+    return text; // エラー時は翻訳せず元のテキスト
   }
 };
 
@@ -42,26 +41,36 @@ export default function MovieDetail({ route, navigation }) {
 
   useEffect(() => {
     async function fetchMovieDetails() {
-      setLoading(true);
-      try {
-        // 🌍 まず日本語データを取得
-        const responseJa = await axios.get(requests.MOVIE_DETAILS(movie.id, "ja"));
-        let movieData = responseJa.data;
+      if (!movie || !movie.title || !movie.overview) {
+        setLoading(true);
+        try {
+          // 🌍 まず日本語の映画データを取得
+          const responseJa = await axios.get(requests.MOVIE_DETAILS(movie.id, "ja"));
+          let movieData = responseJa.data;
 
-        // 🟢 日本語のデータがない場合は英語を取得し、日本語に翻訳
-        if (!movieData.overview) {
-          const responseEn = await axios.get(requests.MOVIE_DETAILS(movie.id, "en"));
-          movieData.overview = responseEn.data.overview ? await translateText(responseEn.data.overview) : "概要情報がありません。";
-        } else {
-          movieData.overview = await translateText(movieData.overview);
+          // 日本語のタイトルや概要がなければ英語を取得して使う
+          if (!movieData.title || !movieData.overview) {
+            const responseEn = await axios.get(requests.MOVIE_DETAILS(movie.id, "en"));
+            const movieDataEn = responseEn.data;
+            movieData = {
+              ...movieDataEn,
+              title: movieData.title || movieDataEn.title,
+              overview: movieData.overview || movieDataEn.overview,
+            };
+          }
+
+          // ✅ ここで必ず翻訳を実行 → どの国の映画でも日本語
+          if (movieData.overview) {
+            movieData.overview = await translateText(movieData.overview);
+          }
+
+          setMovieDetails(movieData);
+        } catch (error) {
+          console.error("映画詳細の取得エラー:", error);
+          Alert.alert("エラー", "映画の詳細が取得できませんでした。");
+        } finally {
+          setLoading(false);
         }
-
-        setMovieDetails(movieData);
-      } catch (error) {
-        console.error("映画詳細の取得エラー:", error);
-        Alert.alert("エラー", "映画の詳細が取得できませんでした。");
-      } finally {
-        setLoading(false);
       }
     }
 
@@ -117,9 +126,29 @@ export default function MovieDetail({ route, navigation }) {
         <Vote vote_average={movieDetails.vote_average || 0} vote_count={movieDetails.vote_count || 0} />
         <Text style={styles.movieReleaseDate}>{displayReleaseDate}</Text>
         <Text style={styles.overview}>{displayOverview}</Text>
+
+        {/* 視聴リンク情報 */}
         <WatchProviders movieId={movieDetails.id} />
+
+        {/* お気に入り登録ボタン */}
         <TouchableOpacity style={styles.favoriteButton} onPress={handleFavorite}>
           <FontAwesome name={favoriteAdded ? "heart" : "heart-o"} size={32} color="red" />
+        </TouchableOpacity>
+
+        {/* ✅ 追加: レビューを書くボタン */}
+        <TouchableOpacity
+          style={styles.reviewButton}
+          onPress={() => navigation.navigate("ReviewScreen", { movieId: movieDetails.id, mode: "write" })}
+        >
+          <Text style={styles.reviewButtonText}>レビューを書く</Text>
+        </TouchableOpacity>
+
+        {/* ✅ 追加: レビューを見るボタン */}
+        <TouchableOpacity
+          style={styles.reviewButton}
+          onPress={() => navigation.navigate("ReviewScreen", { movieId: movieDetails.id, mode: "view" })}
+        >
+          <Text style={styles.reviewButtonText}>レビューを見る</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -135,4 +164,12 @@ const styles = StyleSheet.create({
   movieReleaseDate: { color: "#ccc", marginBottom: 10 },
   overview: { color: "#fff", fontSize: 18 },
   favoriteButton: { marginTop: 15, alignItems: "center" },
+  reviewButton: {
+    marginTop: 15,
+    paddingVertical: 10,
+    backgroundColor: "#ffcc00",
+    alignItems: "center",
+    borderRadius: 5,
+  },
+  reviewButtonText: { color: "#202328", fontSize: 18, fontWeight: "bold" },
 });
